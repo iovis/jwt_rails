@@ -6,7 +6,7 @@ class SessionsController < ApplicationController
 
     if resource&.valid_password?(login_params[:password])
       return render json: {
-        sucess: true,
+        success: true,
         auth_token: JwtService.encode(sub: resource.id)
       }
     end
