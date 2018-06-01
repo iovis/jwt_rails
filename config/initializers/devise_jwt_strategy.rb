@@ -16,10 +16,8 @@ module Devise
 
       private
 
-      AUTHORIZATION_HEADERS_REGEXP = /\Abearer\s+(?<token>\S+)\z/i
-
       def token
-        @token ||= request.headers.fetch('Authorization', '')[AUTHORIZATION_HEADERS_REGEXP, :token]
+        @token ||= AuthorizationHeadersService.extract_token_from(request)
       end
     end
   end
