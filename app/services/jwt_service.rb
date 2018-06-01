@@ -9,4 +9,8 @@ class JwtService
   def self.decode(token)
     JWT.decode(token, Rails.application.secrets.secret_key_base).first
   end
+
+  def self.unsafe_decode(token)
+    JWT.decode(token, Rails.application.secrets.secret_key_base, false).first
+  end
 end
