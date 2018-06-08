@@ -16,7 +16,7 @@ class SessionsController < ApplicationController
   def refresh_token
     resource = User.find(@payload.sub)
 
-    if resource_active?(resource)
+    if resource.active?
       render_token @payload.sub
     else
       render_error 'User inactive'
@@ -45,11 +45,5 @@ class SessionsController < ApplicationController
     @payload = OpenStruct.new(**JwtService.unsafe_decode(token).to_options)
   rescue ::JWT::DecodeError
     render_error 'Invalid token'
-  end
-
-  USER_INACTIVITY_WINDOW = 20.seconds
-
-  def resource_active?(resource)
-    resource.current_sign_in_at > USER_INACTIVITY_WINDOW.ago
   end
 end
