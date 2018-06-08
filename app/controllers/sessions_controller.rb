@@ -1,6 +1,4 @@
 class SessionsController < ApplicationController
-  before_action :parse_token, only: :refresh_token
-
   def create
     resource = User.find_for_database_authentication(email: login_params[:login])
 
@@ -14,19 +12,21 @@ class SessionsController < ApplicationController
   end
 
   def refresh_token
-    resource = User.find(@payload.sub)
+    token = JwtToken.find_from(request)
 
-    if resource.active?
-      render_token @payload.sub
+    if token.user.active?
+      render_token token.user
     else
       render_error 'User inactive'
     end
+  rescue ::JWT::DecodeError
+    render_error 'Invalid token'
   end
 
   private
 
-  def render_token(resource_id)
-    token = JwtService.encode(sub: resource_id, exp: 10.seconds.from_now)
+  def render_token(resource)
+    token = JwtToken.generate_for(resource).token
     render json: { success: true, auth_token: token }
   end
 
@@ -36,14 +36,5 @@ class SessionsController < ApplicationController
 
   def login_params
     params.require(:user_login).permit(:login, :password)
-  end
-
-  def parse_token
-    token = AuthorizationHeadersService.extract_token_from(request)
-    @payload = OpenStruct.new(**JwtService.decode(token).to_options)
-  rescue ::JWT::ExpiredSignature
-    @payload = OpenStruct.new(**JwtService.unsafe_decode(token).to_options)
-  rescue ::JWT::DecodeError
-    render_error 'Invalid token'
   end
 end
