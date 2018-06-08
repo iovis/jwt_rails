@@ -1,12 +1,14 @@
 class SessionsController < ApplicationController
+  before_action :authenticate_user!, only: :destroy
+
   def create
     resource = User.find_for_database_authentication(email: login_params[:login])
 
     if resource&.valid_password?(login_params[:password])
-      return render_token resource.id
+      render_token resource
+    else
+      render_error 'Invalid login or password'
     end
-
-    render_error 'Invalid login or password'
   rescue ActionController::ParameterMissing
     render_error 'Invalid login or password'
   end
@@ -14,13 +16,18 @@ class SessionsController < ApplicationController
   def refresh_token
     token = JwtToken.find_from(request)
 
-    if token.user.active?
+    if token&.user&.active?
       render_token token.user
     else
       render_error 'User inactive'
     end
   rescue ::JWT::DecodeError
     render_error 'Invalid token'
+  end
+
+  def destroy
+    result = current_user.token.destroy
+    render json: { success: result }
   end
 
   private
