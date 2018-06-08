@@ -5,7 +5,14 @@ class JwtToken < ApplicationRecord
 
   validates :user, uniqueness: true
 
-  before_create :generate
+  before_save :generate
+
+  def self.generate_for(user)
+    token = find_or_initialize_by(user: user)
+    token.save && token
+  end
+
+  private
 
   def generate
     self.token = JwtService.encode(sub: user_id, exp: EXPIRATION_TIME.from_now)
