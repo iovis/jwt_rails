@@ -2,7 +2,7 @@ module Devise
   module Strategies
     class JWT < Base
       def valid?
-        token.present?
+        JwtToken.where(token: token).exists?
       end
 
       def authenticate!
