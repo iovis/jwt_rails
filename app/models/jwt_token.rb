@@ -12,6 +12,12 @@ class JwtToken < ApplicationRecord
     token.save && token
   end
 
+  def active?
+    JwtService.decode(token).present?
+  rescue ::JWT::ExpiredSignature
+    false
+  end
+
   private
 
   def generate
