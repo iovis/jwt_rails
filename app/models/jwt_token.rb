@@ -12,6 +12,11 @@ class JwtToken < ApplicationRecord
     token.save && token
   end
 
+  def self.find_from(request)
+    token = AuthorizationHeadersService.extract_token_from(request)
+    find_by token: token
+  end
+
   def active?
     JwtService.decode(token).present?
   rescue ::JWT::ExpiredSignature
