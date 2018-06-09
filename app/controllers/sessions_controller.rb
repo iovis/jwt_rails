@@ -16,7 +16,9 @@ class SessionsController < ApplicationController
   def refresh_token
     token = JwtToken.find_from(request)
 
-    if token&.user&.active?
+    return render_error 'Invalid token' unless token
+
+    if token.user.active?
       render_token token.user
     else
       render_error 'User inactive'
