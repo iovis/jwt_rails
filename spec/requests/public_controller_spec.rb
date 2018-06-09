@@ -1,6 +1,6 @@
 describe PublicController, type: :request do
   describe '/public/index' do
-    let(:index) { 'public/index' }
+    let(:index) { '/public/index' }
 
     before :each do
       get index
