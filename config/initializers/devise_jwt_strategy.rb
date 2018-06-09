@@ -2,11 +2,11 @@ module Devise
   module Strategies
     class JWT < Base
       def valid?
-        token.present? && JwtToken.where(token: token).exists?
+        token.present?
       end
 
       def authenticate!
-        payload = JwtService.decode(token)
+        payload = token.payload
         success! User.find(payload['sub'])
       rescue ::JWT::ExpiredSignature
         fail! 'Auth token has expired. Please log in again'
@@ -17,7 +17,7 @@ module Devise
       private
 
       def token
-        @token ||= AuthorizationHeadersService.extract_token_from(request)
+        @token ||= JwtToken.find_from(request)
       end
     end
   end

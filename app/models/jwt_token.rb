@@ -14,11 +14,23 @@ class JwtToken < ApplicationRecord
 
   def self.find_from(request)
     token = AuthorizationHeadersService.extract_token_from(request)
-    find_by token: token
+    find_by(token: token) if token
+  end
+
+  def to_s
+    token
+  end
+
+  def to_headers
+    { 'Authorization' => "Bearer #{token}" }
+  end
+
+  def payload
+    JwtService.decode(token)
   end
 
   def active?
-    JwtService.decode(token).present?
+    payload.present?
   rescue ::JWT::ExpiredSignature
     false
   end
